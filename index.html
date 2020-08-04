@@ -41,28 +41,28 @@
       <tr>
         <td style="width: 600px;">
           Master gain:<br>
-          <input type="range" min="0" max="2" step="0.1" value="1" id="masterSlider" style="width: 100%;">
+          <input type="range" min="0" max="2" step="0.05" value="1" id="masterSlider" style="width: 100%;">
         </td>
       </tr>
 
       <tr>
         <td style="width: 600px;">
           PD balance:<br>
-          <input type="range" min="0" max="2" step="0.1" value="1" id="pdBalanceSlider" style="width: 100%;">
+          <input type="range" min="0" max="2" step="0.05" value="1" id="pdBalanceSlider" style="width: 100%;">
         </td>
       </tr>
 
       <tr>
         <td style="width: 600px;">
           PD gain:<br>
-          <input type="range" min="0" max="2" step="0.1" value="1" id="pdGainSlider" style="width: 100%;">
+          <input type="range" min="0" max="2" step="0.05" value="1" id="pdGainSlider" style="width: 100%;">
         </td>
       </tr>
       
       <tr>
         <td style="width: 600px;">
           Roll/Pitch balance:<br>
-          <input type="range" min="0" max="2" step="0.1" value="1" id="rpBalanceSlider" style="width: 100%;">
+          <input type="range" min="0" max="2" step="0.05" value="1" id="rpBalanceSlider" style="width: 100%;">
         </td>
       </tr>
     </table>
@@ -87,6 +87,33 @@
       d: 0.0
     }
   };
+  
+  function setCookie(c_name, value, exdays, path) {
+    if (exdays instanceof Date) {
+        var exdate = exdays;
+    } else {
+        var exdate = new Date();
+        exdate.setDate(exdate.getDate() + exdays);
+    }
+    var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+    c_value += ';domain=' + location.hostname + ';path=' + (path ? path : '/');
+    document.cookie = c_name + "=" + c_value;
+  }
+
+  function getCookie(c_name) {
+    var c_value = document.cookie;
+    var c_start = c_value.indexOf(" " + c_name + "=");
+    if (c_start == -1) c_start = c_value.indexOf(c_name + "=");
+
+    if (c_start == -1) c_value = null;
+    else {
+      c_start = c_value.indexOf("=", c_start) + 1;
+      var c_end = c_value.indexOf(";", c_start);
+      if (c_end == -1) c_end = c_value.length;
+      c_value = unescape(c_value.substring(c_start, c_end));
+    }
+    return c_value;
+  }
 
   function calculateNewPids() {
     var PDGainSliderValue = $('#pdGainSlider').val();
@@ -136,12 +163,40 @@
   }
 
   $(function () {
+    if (getCookie('masterSlider') != 'false') {
+      $('#masterSlider').val(getCookie('masterSlider'));
+    }
+    
+    if (getCookie('pdBalanceSlider') != 'false') {
+      $('#pdBalanceSlider').val(getCookie('pdBalanceSlider'));
+    }
+    
+    if (getCookie('pdGainSlider') != 'false') {
+      $('#pdGainSlider').val(getCookie('pdGainSlider'));
+    }
+    
+    if (getCookie('rpBalanceSlider') != 'false') {
+      $('#rpBalanceSlider').val(getCookie('rpBalanceSlider'));
+    }
+  
     calculateNewPids();
 
-    $('#masterSlider').change(function () { calculateNewPids(); });
-    $('#pdBalanceSlider').change(function () { calculateNewPids(); });
-    $('#pdGainSlider').change(function () { calculateNewPids(); });
-    $('#rpBalanceSlider').change(function () { calculateNewPids(); });
+    $('#masterSlider').change(function () {
+      setCookie('masterSlider', $(this).val(), 90, '/');
+      calculateNewPids();
+    });
+    $('#pdBalanceSlider').change(function () {
+      setCookie('pdBalanceSlider', $(this).val(), 90, '/');
+      calculateNewPids();
+    });
+    $('#pdGainSlider').change(function () {
+      setCookie('pdGainSlider', $(this).val(), 90, '/');
+      calculateNewPids();
+    });
+    $('#rpBalanceSlider').change(function () {
+      setCookie('rpBalanceSlider', $(this).val(), 90, '/');
+      calculateNewPids();
+    });
   });
   </script>
 </html>
