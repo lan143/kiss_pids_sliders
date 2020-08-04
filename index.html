@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>KISS pids sliders</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td></td>
+        <td>P</td>
+        <td>I</td>
+        <td>D</td>
+      </tr>
+      
+      <tr>
+        <td>Roll</td>
+        <td><input id="roll_p" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+        <td><input id="roll_i" type="number" value="3" min="0" max="65" step="0.001" value=""></td>
+        <td><input id="roll_d" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+      </tr>
+
+      <tr>
+        <td>Pitch</td>
+        <td><input id="pitch_p" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+        <td><input id="pitch_i" type="number" value="3" min="0" max="65" step="0.001" value=""></td>
+        <td><input id="pitch_d" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+      </tr>
+
+      <tr>
+        <td>Yaw</td>
+        <td><input id="yaw_p" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+        <td><input id="yaw_i" type="number" value="3" min="0" max="65" step="0.001" value=""></td>
+        <td><input id="yaw_d" type="number" value="3" min="0" max="65" step="0.01" value=""></td>
+      </tr>
+    </table>
+    
+    <table>
+      <tr>
+        <td style="width: 600px;">
+          Master gain:<br>
+          <input type="range" min="0" max="2" step="0.1" value="1" id="masterSlider" style="width: 100%;">
+        </td>
+      </tr>
+
+      <tr>
+        <td style="width: 600px;">
+          PD balance:<br>
+          <input type="range" min="0" max="2" step="0.1" value="1" id="pdBalanceSlider" style="width: 100%;">
+        </td>
+      </tr>
+
+      <tr>
+        <td style="width: 600px;">
+          PD gain:<br>
+          <input type="range" min="0" max="2" step="0.1" value="1" id="pdGainSlider" style="width: 100%;">
+        </td>
+      </tr>
+      
+      <tr>
+        <td style="width: 600px;">
+          Roll/Pitch balance:<br>
+          <input type="range" min="0" max="2" step="0.1" value="1" id="rpBalanceSlider" style="width: 100%;">
+        </td>
+      </tr>
+    </table>
+  </body>
+  
+  <script src="jquery-3.5.1.min.js"></script>
+  <script>
+  var defaultPids = {
+    roll: {
+      p: 3.0,
+      i: 0.035,
+      d: 10.0
+    },
+    pitch: {
+      p: 3.0,
+      i: 0.035,
+      d: 10.0
+    },
+    yaw: {
+      p: 8.0,
+      i: 0.05,
+      d: 0.0
+    }
+  };
+
+  function calculateNewPids() {
+    var PDGainSliderValue = $('#pdGainSlider').val();
+    var PDRatioSliderValue = $('#pdBalanceSlider').val();
+    var masterSliderValue = $('#masterSlider').val();
+    var rpBalanceSliderValue = $('#rpBalanceSlider').val();
+    
+    var newPids = {
+      roll: {
+        p: defaultPids.roll.p * PDGainSliderValue * masterSliderValue,
+        i: defaultPids.roll.i * masterSliderValue,
+        d: defaultPids.roll.d * PDGainSliderValue * PDRatioSliderValue * masterSliderValue
+      },
+      pitch: {
+        p: defaultPids.pitch.p * PDGainSliderValue * masterSliderValue,
+        i: defaultPids.pitch.i * masterSliderValue,
+        d: defaultPids.pitch.d * PDGainSliderValue * PDRatioSliderValue * masterSliderValue
+      },
+      yaw: {
+        p: defaultPids.yaw.p * PDGainSliderValue * masterSliderValue,
+        i: defaultPids.yaw.i * masterSliderValue,
+        d: defaultPids.yaw.d * PDGainSliderValue * PDRatioSliderValue * masterSliderValue
+      }
+    };
+    
+    if (rpBalanceSliderValue > 1) {
+      newPids.pitch.p *= rpBalanceSliderValue;
+      newPids.pitch.i *= rpBalanceSliderValue;
+      newPids.pitch.d *= rpBalanceSliderValue;
+    } else if (rpBalanceSliderValue < 1) {
+      newPids.roll.p *= rpBalanceSliderValue;
+      newPids.roll.i *= rpBalanceSliderValue;
+      newPids.roll.d *= rpBalanceSliderValue;
+    }
+
+    $('#roll_p').val(newPids.roll.p.toPrecision(2));
+    $('#pitch_p').val(newPids.pitch.p.toPrecision(2));
+    $('#yaw_p').val(newPids.yaw.p.toPrecision(2));
+
+    $('#roll_d').val(newPids.roll.d.toPrecision(2));
+    $('#pitch_d').val(newPids.pitch.d.toPrecision(2));
+    $('#yaw_d').val(newPids.yaw.d.toPrecision(2));
+
+    $('#roll_i').val(newPids.roll.i.toPrecision(3));
+    $('#pitch_i').val(newPids.pitch.i.toPrecision(3));
+    $('#yaw_i').val(newPids.yaw.i.toPrecision(3));	
+  }
+
+  $(function () {
+    calculateNewPids();
+
+    $('#masterSlider').change(function () { calculateNewPids(); });
+    $('#pdBalanceSlider').change(function () { calculateNewPids(); });
+    $('#pdGainSlider').change(function () { calculateNewPids(); });
+    $('#rpBalanceSlider').change(function () { calculateNewPids(); });
+  });
+  </script>
+</html>
